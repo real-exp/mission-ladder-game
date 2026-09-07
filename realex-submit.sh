@@ -17,6 +17,8 @@ UPSTREAM_REMOTE="${REALEX_UPSTREAM_REMOTE:-upstream}"
 
 die() { echo "❌ $*" >&2; exit 1; }
 info() { echo "▶ $*"; }
+# macOS 기본 bash 는 3.2 라 ${var,,} 를 쓸 수 없다
+lower() { printf '%s' "$1" | tr '[:upper:]' '[:lower:]'; }
 
 # 1. 브랜치 파싱 ---------------------------------------------------------------
 branch="$(git rev-parse --abbrev-ref HEAD 2>/dev/null)" || die "git 저장소가 아닙니다"
@@ -32,7 +34,7 @@ git rev-parse -q --verify "refs/tags/$tag" >/dev/null 2>&1 \
 
 origin_url="$(git remote get-url origin 2>/dev/null)" || die "origin 리모트가 없습니다 (fork 를 origin 으로 두세요)"
 origin_owner="$(echo "$origin_url" | sed -E 's#.*github\.com[:/]([^/]+)/.*#\1#')"
-[[ "${origin_owner,,}" == "${login,,}" ]] \
+[[ "$(lower "$origin_owner")" == "$(lower "$login")" ]] \
   || die "origin(fork) 소유자 '$origin_owner' 와 브랜치의 login '$login' 이 다릅니다"
 
 upstream_url="$(git remote get-url "$UPSTREAM_REMOTE" 2>/dev/null)" \
