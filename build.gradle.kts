@@ -6,7 +6,7 @@ plugins {
     application
 }
 
-val WEB_MAIN_CLASS = "com.realex.ladder.web.LadderApplicationKt"
+val WEB_MAIN_CLASS = "com.realex.ladder.LadderApplicationKt"
 
 group = "com.realex"
 version = "0.1.0"

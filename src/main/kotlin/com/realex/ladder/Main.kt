@@ -6,20 +6,27 @@ fun main() {
     val prizes = InputView.readPrizes(names.size)
     val height = InputView.readHeight()
 
-    val game = LadderGame()
-    val results = game.play(names, prizes, height)
+    val played = LadderGameService().play(names, prizes, height)
 
-    ResultView.printLadder(names, game.lastLadder(), prizes)
-    showResults(names, results)
+    ResultView.printLadder(played)
+    showResults(played)
 }
 
-private fun showResults(names: List<String>, results: List<String>) {
+private fun showResults(played: GamePlayed) {
     while (true) {
         when (val target = InputView.readTarget()) {
             InputView.QUIT -> return
-            InputView.SHOW_ALL -> ResultView.printAll(names, results)
-            in names -> ResultView.printOne(results[names.indexOf(target)])
-            else -> ResultView.printError("참가하지 않은 사람입니다: $target")
+            InputView.SHOW_ALL -> ResultView.printAll(played.results)
+            else -> printOneOrError(played, target)
         }
+    }
+}
+
+private fun printOneOrError(played: GamePlayed, target: String) {
+    val prize = played.prizeOf(target)
+    if (prize == null) {
+        ResultView.printError("참가하지 않은 사람입니다: $target")
+    } else {
+        ResultView.printOne(prize)
     }
 }
