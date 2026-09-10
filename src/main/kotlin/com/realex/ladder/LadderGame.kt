@@ -9,8 +9,12 @@ import kotlin.random.Random
  *
  * 한 층에서 가로선이 연달아 붙으면 한 지점에서 갈 곳이 둘이 되어 이동이 정해지지 않는다.
  * 그래서 가로선을 놓을 때 앞자리에 이미 선이 있으면 다음 자리는 비워 둔다.
+ *
+ * 놓인 사다리는 [lastLadder] 로 꺼내 볼 수 있다 — 결과만으로는 사다리를 그릴 수 없기 때문이다.
  */
 class LadderGame {
+
+    private var ladder: List<List<Boolean>> = emptyList()
 
     /**
      * 사다리를 놓고 참가자별 실행 결과를 구한다.
@@ -31,9 +35,12 @@ class LadderGame {
             "사다리는 ${MIN_HEIGHT}층 이상이어야 합니다: ${height}층"
         }
 
-        val ladder = buildLadder(width = names.size - 1, height = height)
+        ladder = buildLadder(width = names.size - 1, height = height)
         return names.indices.map { start -> prizes[climb(ladder, start)] }
     }
+
+    /** 마지막 판에서 놓인 사다리. `points[층][i]` 는 i번과 i+1번 세로선을 잇는 가로선이 있는지다 */
+    fun lastLadder(): List<List<Boolean>> = ladder
 
     private fun buildLadder(width: Int, height: Int): List<List<Boolean>> = List(height) { buildRow(width) }
 
@@ -45,8 +52,8 @@ class LadderGame {
         return row
     }
 
-    private fun climb(ladder: List<List<Boolean>>, start: Int): Int =
-        ladder.fold(start) { position, row -> move(row, position) }
+    private fun climb(rows: List<List<Boolean>>, start: Int): Int =
+        rows.fold(start) { position, row -> move(row, position) }
 
     private fun move(row: List<Boolean>, position: Int): Int = when {
         position > 0 && row[position - 1] -> position - 1

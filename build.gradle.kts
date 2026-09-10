@@ -26,3 +26,8 @@ application {
 tasks.test {
     useJUnitPlatform()
 }
+
+// 콘솔로 입력을 받으므로 gradle run 에 터미널 stdin 을 연결한다
+tasks.named<JavaExec>("run") {
+    standardInput = System.`in`
+}
