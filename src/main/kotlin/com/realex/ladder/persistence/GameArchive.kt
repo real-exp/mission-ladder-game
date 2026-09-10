@@ -7,6 +7,7 @@ import com.realex.ladder.NoSuchGameException
 import com.realex.ladder.PlayerResult
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 /**
  * 돌린 판을 남기고 다시 꺼내 온다.
@@ -14,6 +15,9 @@ import org.springframework.stereotype.Service
  * 서버를 껐다 켜면 메모리에 있던 이력이 사라져 지난 판을 볼 수 없었다. 이제 H2 에 남긴다.
  *
  * 사다리 도면은 층마다 가로선 유무를 0/1 로 적고 층은 쉼표로 잇는다 ("110,011").
+ *
+ * 한 판을 남기는 일은 판·참가자·통계 세 군데를 건드린다. 도중에 실패하면 판만 남고 통계는
+ * 어긋난 채로 굳으므로 [save] 는 한 트랜잭션으로 묶는다.
  */
 @Service
 class GameArchive(
@@ -22,6 +26,7 @@ class GameArchive(
     private val stats: PlayerStatRepository,
 ) {
 
+    @Transactional
     fun save(played: GamePlayed) {
         games.save(GameEntity(id = played.id, playedAt = played.playedAt, rows = encode(played.ladder)))
         played.results.forEachIndexed { position, result ->
@@ -41,9 +46,9 @@ class GameArchive(
     fun playCounts(): List<PlayerStatEntity> = stats.findAllByOrderByPlayCountDesc()
 
     private fun countPlay(name: String) {
-        val stat = stats.findById(name).orElseGet { PlayerStatEntity(name = name, playCount = 0) }
-        stat.playCount += 1
-        stats.save(stat)
+        if (stats.increasePlayCount(name) == 0) {
+            stats.save(PlayerStatEntity(name = name, playCount = 1))
+        }
     }
 
     fun find(id: String): GamePlayed {
