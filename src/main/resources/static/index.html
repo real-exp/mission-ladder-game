@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>사다리 게임</title>
+<style>
+  body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 24px; background: #fafafa; color: #222; }
+  h1 { font-size: 20px; margin: 0 0 20px; }
+  form { display: grid; gap: 12px; max-width: 420px; margin-bottom: 24px; }
+  label { display: grid; gap: 4px; font-size: 13px; color: #555; }
+  input { padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+  button { padding: 9px 16px; border: 0; border-radius: 6px; background: #2f6feb; color: #fff; font-size: 14px; cursor: pointer; }
+  button:disabled { background: #9bb8ef; cursor: default; }
+  #error { color: #c0392b; font-size: 13px; min-height: 18px; }
+  #ladder { margin: 8px 0 20px; overflow-x: auto; }
+  table { border-collapse: collapse; font-size: 14px; }
+  td { padding: 4px 12px 4px 0; }
+  td.name { color: #555; }
+</style>
+</head>
+<body>
+<h1>사다리 게임</h1>
+
+<form id="play">
+  <label>참가자 <input name="names" value="pobi,honux,crong,jk" required></label>
+  <label>실행 결과 <input name="prizes" value="꽝,5000,꽝,3000" required></label>
+  <label>사다리 높이 <input name="height" type="number" value="5" min="1" required></label>
+  <button type="submit">실행</button>
+</form>
+
+<div id="error"></div>
+<div id="ladder"></div>
+<table id="results"></table>
+
+<script>
+const COL = 72, ROW = 36, PAD = 24;
+
+document.getElementById('play').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const button = form.querySelector('button');
+  const body = {
+    names: form.names.value.split(',').map(s => s.trim()),
+    prizes: form.prizes.value.split(',').map(s => s.trim()),
+    height: Number(form.height.value),
+  };
+
+  button.disabled = true;
+  show('');
+  try {
+    const res = await fetch('/api/games', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok) { show(data.message); clear(); return; }
+    draw(body.names, data);
+  } catch (err) {
+    show('요청에 실패했습니다: ' + err.message);
+    clear();
+  } finally {
+    button.disabled = false;
+  }
+});
+
+function show(message) { document.getElementById('error').textContent = message; }
+
+function clear() {
+  document.getElementById('ladder').innerHTML = '';
+  document.getElementById('results').innerHTML = '';
+}
+
+function draw(names, data) {
+  document.getElementById('ladder').innerHTML = svg(names, data.rows, data.prizes);
+  document.getElementById('results').innerHTML = data.results
+    .map(r => `<tr><td class="name">${escape(r.name)}</td><td>${escape(r.prize)}</td></tr>`)
+    .join('');
+}
+
+function svg(names, rows, prizes) {
+  const width = (names.length - 1) * COL + PAD * 2;
+  const height = rows.length * ROW + 64;
+  const parts = [];
+
+  names.forEach((name, i) => {
+    const x = PAD + i * COL;
+    parts.push(`<text x="${x}" y="16" text-anchor="middle" font-size="13" fill="#555">${escape(name)}</text>`);
+    parts.push(`<line x1="${x}" y1="26" x2="${x}" y2="${26 + rows.length * ROW}" stroke="#bbb" stroke-width="2"/>`);
+    parts.push(`<text x="${x}" y="${height - 6}" text-anchor="middle" font-size="13" fill="#555">${escape(prizes[i])}</text>`);
+  });
+
+  rows.forEach((row, r) => {
+    const y = 26 + (r + 1) * ROW - ROW / 2;
+    row.forEach((drawn, c) => {
+      if (!drawn) return;
+      parts.push(`<line x1="${PAD + c * COL}" y1="${y}" x2="${PAD + (c + 1) * COL}" y2="${y}" stroke="#2f6feb" stroke-width="2"/>`);
+    });
+  });
+
+  return `<svg width="${width}" height="${height}">${parts.join('')}</svg>`;
+}
+
+function escape(text) {
+  return String(text).replace(/[&<>"']/g, c =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+</script>
+</body>
+</html>
