@@ -17,6 +17,12 @@ class ApiExceptionHandler {
     fun handleInvalidRequest(e: IllegalArgumentException): ResponseEntity<ErrorResponse> =
         ResponseEntity.status(HttpStatus.BAD_REQUEST)
             .body(ErrorResponse(e.message ?: "요청을 처리할 수 없습니다"))
+
+    /** 아직 판을 돌리지 않았는데 결과를 물은 경우 */
+    @ExceptionHandler(IllegalStateException::class)
+    fun handleNotReady(e: IllegalStateException): ResponseEntity<ErrorResponse> =
+        ResponseEntity.status(HttpStatus.CONFLICT)
+            .body(ErrorResponse(e.message ?: "아직 처리할 수 없습니다"))
 }
 
 data class ErrorResponse(val message: String)

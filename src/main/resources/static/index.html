@@ -33,6 +33,12 @@
 <div id="ladder"></div>
 <table id="results"></table>
 
+<form id="lookup">
+  <label>결과 조회 <input name="who" placeholder="참가자 이름"></label>
+  <button type="submit">조회</button>
+</form>
+<div id="lookupResult"></div>
+
 <script>
 const COL = 72, ROW = 36, PAD = 24;
 
@@ -62,6 +68,19 @@ document.getElementById('play').addEventListener('submit', async (e) => {
     clear();
   } finally {
     button.disabled = false;
+  }
+});
+
+document.getElementById('lookup').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const who = e.target.elements.who.value.trim();
+  const target = document.getElementById('lookupResult');
+  try {
+    const res = await fetch('/api/games/latest/results/' + encodeURIComponent(who));
+    const data = await res.json();
+    target.textContent = res.ok ? `${data.name} : ${data.prize}` : data.message;
+  } catch (err) {
+    target.textContent = '조회에 실패했습니다: ' + err.message;
   }
 });
 

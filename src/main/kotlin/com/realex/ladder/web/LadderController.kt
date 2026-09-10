@@ -2,6 +2,8 @@ package com.realex.ladder.web
 
 import com.realex.ladder.GamePlayed
 import com.realex.ladder.LadderGameService
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -21,6 +23,13 @@ class LadderController(private val gameService: LadderGameService) {
         )
         return PlayResponse.from(played)
     }
+
+    @GetMapping("/latest")
+    fun latest(): PlayResponse = PlayResponse.from(gameService.lastPlayed())
+
+    @GetMapping("/latest/results/{name}")
+    fun resultOf(@PathVariable name: String): ResultEntry =
+        ResultEntry(name, gameService.prizeOf(name))
 }
 
 data class PlayRequest(val names: List<String>?, val prizes: List<String>?, val height: Int?)

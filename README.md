@@ -29,7 +29,13 @@ jk : 꽝
 ./gradlew build    # 컴파일 + 테스트
 ```
 
-웹은 `http://localhost:8080` 에서 화면으로 쓰거나, `POST /api/games` 를 직접 부를 수 있습니다.
+웹은 `http://localhost:8080` 에서 화면으로 쓰거나 API 를 직접 부를 수 있습니다.
+
+| | |
+|---|---|
+| `POST /api/games` | 한 판 돌리기 |
+| `GET /api/games/latest` | 마지막 판 다시 보기 |
+| `GET /api/games/latest/results/{이름}` | 그 사람 결과만 |
 
 ```bash
 curl -X POST http://localhost:8080/api/games -H 'Content-Type: application/json' \
