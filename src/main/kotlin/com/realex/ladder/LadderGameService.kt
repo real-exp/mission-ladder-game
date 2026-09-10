@@ -3,7 +3,6 @@ package com.realex.ladder
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
 
 /**
  * 한 판을 진행하는 응용 서비스.
@@ -12,13 +11,14 @@ import java.util.concurrent.ConcurrentHashMap
  * 사다리를 놓고 누가 무엇을 받는지 돌려준다"는 흐름은 하나뿐이므로 여기로 모은다.
  * 화면은 이 결과를 어떻게 보여 줄지만 정한다.
  *
- * 돌린 판은 번호를 붙여 보관하고 그 번호로만 꺼낸다. 이 서비스는 하나뿐인데 판을 돌리는
- * 사람은 여럿이라, 마지막 판 하나만 들고 있으면 서로의 결과를 덮어쓴다.
+ * 돌린 판에는 번호를 붙인다. 이 서비스는 하나뿐인데 판을 돌리는 사람은 여럿이라,
+ * 마지막 판 하나만 들고 있으면 서로의 결과를 덮어쓴다.
+ *
+ * 보관은 하지 않는다 — 콘솔은 한 판 돌리고 끝이라 이력이 필요 없다. 웹이 남기는 것은
+ * [com.realex.ladder.persistence.GameArchive] 가 맡는다.
  */
 @Service
 class LadderGameService {
-
-    private val played = ConcurrentHashMap<String, GamePlayed>()
 
     fun play(names: List<String>, prizes: List<String>, height: Int): GamePlayed {
         val game = LadderGame()
@@ -31,20 +31,8 @@ class LadderGameService {
             ladder = game.lastLadder(),
             results = names.zip(results).map { (name, prize) -> PlayerResult(name, prize) },
         )
-        played[outcome.id] = outcome
         return outcome
     }
-
-    fun find(id: String): GamePlayed =
-        played[id] ?: throw NoSuchGameException("그런 판이 없습니다: $id")
-
-    /** 최근에 돌린 판부터 */
-    fun recent(limit: Int): List<GamePlayed> =
-        played.values.sortedByDescending { it.playedAt }.take(limit)
-
-    /** 그 판에서 그 사람이 받은 실행 결과 */
-    fun prizeOf(id: String, name: String): String =
-        requireNotNull(find(id).prizeOf(name)) { "참가하지 않은 사람입니다: $name" }
 }
 
 /** 없는 판을 찾았을 때 */

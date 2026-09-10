@@ -4,3 +4,25 @@ server:
 spring:
   application:
     name: mission-ladder-game
+
+  # 파일 모드라 서버를 껐다 켜도 이력이 남는다
+  datasource:
+    url: jdbc:h2:file:./data/ladder;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  h2:
+    console:
+      enabled: true
+
+logging:
+  level:
+    org.hibernate.SQL: debug

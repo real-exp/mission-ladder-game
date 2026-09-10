@@ -46,7 +46,7 @@ curl -X POST http://localhost:8080/api/games -H 'Content-Type: application/json'
 사다리를 다 놓으면 결과를 물어봅니다. 이름을 넣으면 그 사람 것만, `all` 은 전체,
 `quit` 은 종료입니다.
 
-JDK 21 이 필요합니다.
+JDK 21 이 필요합니다. 이력은 H2 에 파일로 남습니다(`data/`).
 
 ## 테스트가 확인하는 것
 

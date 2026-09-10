@@ -2,6 +2,7 @@ package com.realex.ladder.web
 
 import com.realex.ladder.GamePlayed
 import com.realex.ladder.LadderGameService
+import com.realex.ladder.persistence.GameArchive
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -13,7 +14,10 @@ import org.springframework.web.bind.annotation.RestController
 /** 사다리 게임 실행 API */
 @RestController
 @RequestMapping("/api/games")
-class LadderController(private val gameService: LadderGameService) {
+class LadderController(
+    private val gameService: LadderGameService,
+    private val archive: GameArchive,
+) {
 
     @PostMapping
     fun play(@RequestBody request: PlayRequest): PlayResponse {
@@ -22,19 +26,20 @@ class LadderController(private val gameService: LadderGameService) {
             prizes = request.prizes.orEmpty().map { it.trim() },
             height = request.height ?: 0,
         )
+        archive.save(played)
         return PlayResponse.from(played)
     }
 
     @GetMapping
     fun recent(@RequestParam(defaultValue = "20") limit: Int): List<GameSummary> =
-        gameService.recent(limit).map { GameSummary.from(it) }
+        archive.recent(limit).map { GameSummary.from(it) }
 
     @GetMapping("/{id}")
-    fun find(@PathVariable id: String): PlayResponse = PlayResponse.from(gameService.find(id))
+    fun find(@PathVariable id: String): PlayResponse = PlayResponse.from(archive.find(id))
 
     @GetMapping("/{id}/results/{name}")
     fun resultOf(@PathVariable id: String, @PathVariable name: String): ResultEntry =
-        ResultEntry(name, gameService.prizeOf(id, name))
+        ResultEntry(name, archive.prizeOf(id, name))
 }
 
 data class PlayRequest(val names: List<String>?, val prizes: List<String>?, val height: Int?)
