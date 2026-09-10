@@ -12,13 +12,11 @@ crong : 3000
 jk : 꽝
 ```
 
-## 지금 상태
-
-`LadderGame.play()` 의 본문이 비어 있습니다. 테스트는 이미 있고, 전부 실패합니다.
+## 실행
 
 ```bash
-./gradlew test    # 지금은 실패합니다
-./gradlew run     # 예시 한 판 — play() 를 채우면 돌아갑니다
+./gradlew run     # 예시 한 판
+./gradlew test    # 테스트
 ./gradlew build   # 컴파일 + 테스트
 ```
 

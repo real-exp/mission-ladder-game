@@ -1,9 +1,14 @@
 package com.realex.ladder
 
+import kotlin.random.Random
+
 /**
  * 사다리 게임 한 판.
  *
  * 참가자와 실행 결과를 사다리로 이어 누가 무엇을 받는지 정한다.
+ *
+ * 한 층에서 가로선이 연달아 붙으면 한 지점에서 갈 곳이 둘이 되어 이동이 정해지지 않는다.
+ * 그래서 가로선을 놓을 때 앞자리에 이미 선이 있으면 다음 자리는 비워 둔다.
  */
 class LadderGame {
 
@@ -15,6 +20,42 @@ class LadderGame {
      * @param height 사다리 층 수
      * @return [names] 와 같은 순서로 대응하는 실행 결과
      */
-    fun play(names: List<String>, prizes: List<String>, height: Int): List<String> =
-        TODO("사다리를 놓고 참가자별 실행 결과를 구하세요")
+    fun play(names: List<String>, prizes: List<String>, height: Int): List<String> {
+        require(names.size >= MIN_PLAYERS) {
+            "참가자는 ${MIN_PLAYERS}명 이상이어야 합니다: ${names.size}명"
+        }
+        require(names.size == prizes.size) {
+            "참가자 수와 실행 결과 수가 같아야 합니다: 참가자 ${names.size}, 결과 ${prizes.size}"
+        }
+        require(height >= MIN_HEIGHT) {
+            "사다리는 ${MIN_HEIGHT}층 이상이어야 합니다: ${height}층"
+        }
+
+        val ladder = buildLadder(width = names.size - 1, height = height)
+        return names.indices.map { start -> prizes[climb(ladder, start)] }
+    }
+
+    private fun buildLadder(width: Int, height: Int): List<List<Boolean>> = List(height) { buildRow(width) }
+
+    private fun buildRow(width: Int): List<Boolean> {
+        val row = mutableListOf<Boolean>()
+        repeat(width) { index ->
+            row += if (index > 0 && row[index - 1]) false else Random.nextBoolean()
+        }
+        return row
+    }
+
+    private fun climb(ladder: List<List<Boolean>>, start: Int): Int =
+        ladder.fold(start) { position, row -> move(row, position) }
+
+    private fun move(row: List<Boolean>, position: Int): Int = when {
+        position > 0 && row[position - 1] -> position - 1
+        position < row.size && row[position] -> position + 1
+        else -> position
+    }
+
+    companion object {
+        private const val MIN_PLAYERS = 2
+        private const val MIN_HEIGHT = 1
+    }
 }
