@@ -23,9 +23,17 @@ jk : 꽝
 ## 실행
 
 ```bash
-./gradlew run     # 참가자·실행 결과·사다리 높이를 입력받아 한 판
-./gradlew test    # 테스트
-./gradlew build   # 컴파일 + 테스트
+./gradlew run      # 콘솔 — 참가자·실행 결과·사다리 높이를 입력받아 한 판
+./gradlew bootRun  # 웹 — http://localhost:8080
+./gradlew test     # 테스트
+./gradlew build    # 컴파일 + 테스트
+```
+
+웹은 `POST /api/games` 하나입니다.
+
+```bash
+curl -X POST http://localhost:8080/api/games -H 'Content-Type: application/json' \
+  -d '{"names":["pobi","honux","crong","jk"],"prizes":["꽝","5000","꽝","3000"],"height":5}'
 ```
 
 사다리를 다 놓으면 결과를 물어봅니다. 이름을 넣으면 그 사람 것만, `all` 은 전체,
