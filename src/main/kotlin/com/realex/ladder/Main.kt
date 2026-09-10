@@ -5,6 +5,8 @@ private const val MIN_PLAYERS = 2
 private const val COLUMN_WIDTH = 6
 private const val RUNG = "-----"
 private const val GAP = "     "
+private const val SHOW_ALL = "all"
+private const val QUIT = "quit"
 
 /** 콘솔 진입점 — 참가자와 실행 결과를 입력받아 한 판을 돌린다 */
 fun main() {
@@ -28,9 +30,33 @@ fun main() {
     printLadder(names, game.lastLadder())
     printPrizes(prizes)
 
+    showResults(names, results)
+}
+
+private fun showResults(names: List<String>, results: List<String>) {
+    while (true) {
+        println()
+        println("결과를 보고 싶은 사람은? (전체는 $SHOW_ALL, 종료는 $QUIT)")
+        val target = (readlnOrNull() ?: return).trim()
+        when {
+            target == QUIT -> return
+            target == SHOW_ALL -> printAll(names, results)
+            target in names -> printOne(results[names.indexOf(target)])
+            else -> println("참가하지 않은 사람입니다: $target")
+        }
+    }
+}
+
+private fun printAll(names: List<String>, results: List<String>) {
     println()
     println("실행 결과")
     names.zip(results).forEach { (name, prize) -> println("$name : $prize") }
+}
+
+private fun printOne(result: String) {
+    println()
+    println("실행 결과")
+    println(result)
 }
 
 private fun readNames(): List<String> {
