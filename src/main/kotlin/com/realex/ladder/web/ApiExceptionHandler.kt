@@ -1,5 +1,6 @@
 package com.realex.ladder.web
 
+import com.realex.ladder.NoSuchGameException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
@@ -18,11 +19,10 @@ class ApiExceptionHandler {
         ResponseEntity.status(HttpStatus.BAD_REQUEST)
             .body(ErrorResponse(e.message ?: "요청을 처리할 수 없습니다"))
 
-    /** 아직 판을 돌리지 않았는데 결과를 물은 경우 */
-    @ExceptionHandler(IllegalStateException::class)
-    fun handleNotReady(e: IllegalStateException): ResponseEntity<ErrorResponse> =
-        ResponseEntity.status(HttpStatus.CONFLICT)
-            .body(ErrorResponse(e.message ?: "아직 처리할 수 없습니다"))
+    @ExceptionHandler(NoSuchGameException::class)
+    fun handleNotFound(e: NoSuchGameException): ResponseEntity<ErrorResponse> =
+        ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(ErrorResponse(e.message ?: "찾을 수 없습니다"))
 }
 
 data class ErrorResponse(val message: String)

@@ -24,23 +24,25 @@ class LadderController(private val gameService: LadderGameService) {
         return PlayResponse.from(played)
     }
 
-    @GetMapping("/latest")
-    fun latest(): PlayResponse = PlayResponse.from(gameService.lastPlayed())
+    @GetMapping("/{id}")
+    fun find(@PathVariable id: String): PlayResponse = PlayResponse.from(gameService.find(id))
 
-    @GetMapping("/latest/results/{name}")
-    fun resultOf(@PathVariable name: String): ResultEntry =
-        ResultEntry(name, gameService.prizeOf(name))
+    @GetMapping("/{id}/results/{name}")
+    fun resultOf(@PathVariable id: String, @PathVariable name: String): ResultEntry =
+        ResultEntry(name, gameService.prizeOf(id, name))
 }
 
 data class PlayRequest(val names: List<String>?, val prizes: List<String>?, val height: Int?)
 
 data class PlayResponse(
+    val id: String,
     val rows: List<List<Boolean>>,
     val prizes: List<String>,
     val results: List<ResultEntry>,
 ) {
     companion object {
         fun from(played: GamePlayed): PlayResponse = PlayResponse(
+            id = played.id,
             rows = played.ladder.lines.map { it.points },
             prizes = played.prizes,
             results = played.results.map { ResultEntry(it.name, it.prize) },

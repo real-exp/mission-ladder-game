@@ -33,9 +33,9 @@ jk : 꽝
 
 | | |
 |---|---|
-| `POST /api/games` | 한 판 돌리기 |
-| `GET /api/games/latest` | 마지막 판 다시 보기 |
-| `GET /api/games/latest/results/{이름}` | 그 사람 결과만 |
+| `POST /api/games` | 한 판 돌리기 — 응답에 판 번호(`id`)가 들어 있습니다 |
+| `GET /api/games/{id}` | 그 판 다시 보기 |
+| `GET /api/games/{id}/results/{이름}` | 그 판에서 그 사람 결과만 |
 
 ```bash
 curl -X POST http://localhost:8080/api/games -H 'Content-Type: application/json' \
