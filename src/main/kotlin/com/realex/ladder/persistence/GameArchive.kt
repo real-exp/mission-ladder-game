@@ -40,10 +40,20 @@ class GameArchive(
         return toPlayed(game, players.findByGameIdOrderByPosition(id))
     }
 
-    /** 최근에 돌린 판부터 */
-    fun recent(limit: Int): List<GamePlayed> =
-        games.findAllByOrderByPlayedAtDesc(PageRequest.of(0, limit))
-            .map { game -> toPlayed(game, players.findByGameIdOrderByPosition(game.id)) }
+    /**
+     * 최근에 돌린 판부터.
+     *
+     * 참가자를 판마다 따로 읽으면 목록 길이만큼 쿼리가 늘어난다. 판 번호를 모아 한 번에 읽고
+     * 메모리에서 판별로 나눈다 — 목록이 몇 건이든 쿼리는 둘이다.
+     */
+    fun recent(limit: Int): List<GamePlayed> {
+        val found = games.findAllByOrderByPlayedAtDesc(PageRequest.of(0, limit))
+        if (found.isEmpty()) return emptyList()
+
+        val playersByGame = players.findByGameIdInOrderByPosition(found.map { it.id })
+            .groupBy { it.gameId }
+        return found.map { game -> toPlayed(game, playersByGame[game.id].orEmpty()) }
+    }
 
     /** 그 판에서 그 사람이 받은 실행 결과 */
     fun prizeOf(id: String, name: String): String =
