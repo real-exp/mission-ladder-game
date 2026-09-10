@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 /** 사다리 게임 실행 API */
@@ -23,6 +24,10 @@ class LadderController(private val gameService: LadderGameService) {
         )
         return PlayResponse.from(played)
     }
+
+    @GetMapping
+    fun recent(@RequestParam(defaultValue = "20") limit: Int): List<GameSummary> =
+        gameService.recent(limit).map { GameSummary.from(it) }
 
     @GetMapping("/{id}")
     fun find(@PathVariable id: String): PlayResponse = PlayResponse.from(gameService.find(id))
@@ -51,3 +56,20 @@ data class PlayResponse(
 }
 
 data class ResultEntry(val name: String, val prize: String)
+
+/** 이력 목록에 한 줄로 나가는 요약 */
+data class GameSummary(
+    val id: String,
+    val playedAt: String,
+    val names: List<String>,
+    val results: List<ResultEntry>,
+) {
+    companion object {
+        fun from(played: GamePlayed): GameSummary = GameSummary(
+            id = played.id,
+            playedAt = played.playedAt.toString(),
+            names = played.names,
+            results = played.results.map { ResultEntry(it.name, it.prize) },
+        )
+    }
+}

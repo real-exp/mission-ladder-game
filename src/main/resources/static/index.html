@@ -7,6 +7,9 @@
 <style>
   body { font-family: system-ui, -apple-system, sans-serif; margin: 0; padding: 24px; background: #fafafa; color: #222; }
   h1 { font-size: 20px; margin: 0 0 20px; }
+  h2 { font-size: 15px; margin: 24px 0 8px; }
+  #history td { font-size: 13px; color: #444; }
+  #history td.when { color: #888; }
   form { display: grid; gap: 12px; max-width: 420px; margin-bottom: 24px; }
   label { display: grid; gap: 4px; font-size: 13px; color: #555; }
   input { padding: 8px 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
@@ -32,6 +35,10 @@
 <div id="error"></div>
 <div id="ladder"></div>
 <table id="results"></table>
+
+<h2>최근 판</h2>
+<button id="reload" type="button">이력 불러오기</button>
+<table id="history"></table>
 
 <form id="lookup">
   <label>결과 조회 <input name="who" placeholder="참가자 이름"></label>
@@ -81,6 +88,20 @@ document.getElementById('lookup').addEventListener('submit', async (e) => {
     target.textContent = res.ok ? `${data.name} : ${data.prize}` : data.message;
   } catch (err) {
     target.textContent = '조회에 실패했습니다: ' + err.message;
+  }
+});
+
+document.getElementById('reload').addEventListener('click', async () => {
+  const table = document.getElementById('history');
+  try {
+    const res = await fetch('/api/games?limit=10');
+    const games = await res.json();
+    table.innerHTML = games.length === 0
+      ? '<tr><td>아직 돌린 판이 없습니다.</td></tr>'
+      : games.map(g => `<tr><td class="when">${escape(g.playedAt.slice(11, 19))}</td>` +
+          `<td>${g.results.map(r => escape(r.name) + ' : ' + escape(r.prize)).join(', ')}</td></tr>`).join('');
+  } catch (err) {
+    table.innerHTML = `<tr><td>이력을 불러오지 못했습니다: ${escape(err.message)}</td></tr>`;
   }
 });
 

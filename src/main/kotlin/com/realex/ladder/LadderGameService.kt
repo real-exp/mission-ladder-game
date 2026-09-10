@@ -1,6 +1,7 @@
 package com.realex.ladder
 
 import org.springframework.stereotype.Service
+import java.time.Instant
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 
@@ -24,6 +25,7 @@ class LadderGameService {
         val results = game.play(names, prizes, height)
         val outcome = GamePlayed(
             id = UUID.randomUUID().toString(),
+            playedAt = Instant.now(),
             names = names,
             prizes = prizes,
             ladder = game.lastLadder(),
@@ -35,6 +37,10 @@ class LadderGameService {
 
     fun find(id: String): GamePlayed =
         played[id] ?: throw NoSuchGameException("그런 판이 없습니다: $id")
+
+    /** 최근에 돌린 판부터 */
+    fun recent(limit: Int): List<GamePlayed> =
+        played.values.sortedByDescending { it.playedAt }.take(limit)
 
     /** 그 판에서 그 사람이 받은 실행 결과 */
     fun prizeOf(id: String, name: String): String =
@@ -51,6 +57,7 @@ class NoSuchGameException(message: String) : RuntimeException(message)
  */
 data class GamePlayed(
     val id: String,
+    val playedAt: Instant,
     val names: List<String>,
     val prizes: List<String>,
     val ladder: Ladder,
