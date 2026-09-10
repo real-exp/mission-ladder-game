@@ -42,6 +42,18 @@ class LadderController(
         ResultEntry(name, archive.prizeOf(id, name))
 }
 
+/** 사람별 누적 통계 */
+@RestController
+@RequestMapping("/api/stats")
+class StatsController(private val archive: GameArchive) {
+
+    @GetMapping
+    fun playCounts(): List<PlayCount> =
+        archive.playCounts().map { PlayCount(it.name, it.playCount) }
+}
+
+data class PlayCount(val name: String, val playCount: Int)
+
 data class PlayRequest(val names: List<String>?, val prizes: List<String>?, val height: Int?)
 
 data class PlayResponse(

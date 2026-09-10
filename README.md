@@ -37,6 +37,7 @@ jk : 꽝
 | `GET /api/games?limit=20` | 최근에 돌린 판 목록 |
 | `GET /api/games/{id}` | 그 판 다시 보기 |
 | `GET /api/games/{id}/results/{이름}` | 그 판에서 그 사람 결과만 |
+| `GET /api/stats` | 사람별 누적 참가 횟수 |
 
 ```bash
 curl -X POST http://localhost:8080/api/games -H 'Content-Type: application/json' \

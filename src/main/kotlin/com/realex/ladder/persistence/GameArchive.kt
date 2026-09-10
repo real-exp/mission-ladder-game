@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service
 class GameArchive(
     private val games: GameRepository,
     private val players: GamePlayerRepository,
+    private val stats: PlayerStatRepository,
 ) {
 
     fun save(played: GamePlayed) {
@@ -33,6 +34,16 @@ class GameArchive(
                 ),
             )
         }
+        played.names.forEach { countPlay(it) }
+    }
+
+    /** 사람별 누적 참가 횟수 — 많이 한 사람부터 */
+    fun playCounts(): List<PlayerStatEntity> = stats.findAllByOrderByPlayCountDesc()
+
+    private fun countPlay(name: String) {
+        val stat = stats.findById(name).orElseGet { PlayerStatEntity(name = name, playCount = 0) }
+        stat.playCount += 1
+        stats.save(stat)
     }
 
     fun find(id: String): GamePlayed {
